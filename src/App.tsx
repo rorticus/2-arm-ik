@@ -15,7 +15,13 @@ function App() {
 
   const calculateThetas = useCallback(
     (x: number, y: number) => {
-      const d = Math.sqrt(x * x + y * y);
+      const maxReach = l1 + l2;
+      let d = Math.sqrt(x * x + y * y);
+      if (d > maxReach) {
+        x = (x / d) * maxReach;
+        y = (y / d) * maxReach;
+        d = maxReach;
+      }
       const a = Math.atan2(y, x);
       const b = Math.acos((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d));
       const c = Math.acos((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2));
