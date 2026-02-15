@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import "./App.css";
 import NumberInput from "./components/NumberInput";
 import Canvas from "./components/Canvas";
@@ -8,6 +8,18 @@ function App() {
   const [l2, setL2] = useState(100);
   const [theta0, setTheta0] = useState(80);
   const [theta1, setTheta1] = useState(-45);
+
+  const calculateThetas = useCallback(
+    (x: number, y: number) => {
+      const d = Math.sqrt(x * x + y * y);
+      const a = Math.atan2(y, x);
+      const b = Math.acos((l1 * l1 + d * d - l2 * l2) / (2 * l1 * d));
+      const c = Math.acos((l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2));
+      setTheta0(((a + b) * 180) / Math.PI);
+      setTheta1(((c - Math.PI) * 180) / Math.PI);
+    },
+    [l1, l2],
+  );
 
   return (
     <div className="h-screen flex flex-col">
@@ -58,7 +70,7 @@ function App() {
           theta0={theta0}
           theta1={theta1}
           onClick={(x, y) => {
-            console.log("Canvas clicked at:", x, y);
+            calculateThetas(x, y);
           }}
         />
       </div>
