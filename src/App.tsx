@@ -9,6 +9,7 @@ function App() {
   const [l2, setL2] = useState(100);
   const [theta0, setTheta0] = useState(80);
   const [theta1, setTheta1] = useState(-45);
+  const [dragMode, setDragMode] = useState(false);
 
   const { isConnected, connect, setServoAngles } = useSerialProtocol();
 
@@ -70,7 +71,13 @@ function App() {
           onChange={setTheta1}
         />
         <button
-          className="ml-auto px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+          className={`ml-auto px-4 py-2 rounded ${dragMode ? "bg-orange-500 text-white" : "bg-gray-300 text-black"}`}
+          onClick={() => setDragMode((d) => !d)}
+        >
+          {dragMode ? "Drag Mode: IK" : "Drag Mode: Pan"}
+        </button>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
           disabled={isConnected}
           onClick={() => {
             connect();
@@ -85,6 +92,7 @@ function App() {
           l2={l2}
           theta0={theta0}
           theta1={theta1}
+          dragMode={dragMode}
           onClick={(x, y) => {
             calculateThetas(x, y);
           }}

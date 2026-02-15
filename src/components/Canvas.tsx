@@ -17,6 +17,7 @@ type CanvasProps = {
   l2: number;
   theta0: number;
   theta1: number;
+  dragMode?: boolean;
   onClick?: (x: number, y: number) => void;
 };
 
@@ -25,6 +26,7 @@ export default function Canvas({
   l2,
   theta0,
   theta1,
+  dragMode = false,
   onClick,
 }: CanvasProps) {
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
@@ -191,7 +193,7 @@ export default function Canvas({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Drag-to-pan
+  // Drag-to-pan or drag-to-IK
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -203,17 +205,32 @@ export default function Canvas({
         camX: camera.x,
         camY: camera.y,
       };
+      if (dragMode && onClick) {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        const world = screenToWorld(sx, sy, rect.width, rect.height);
+        onClick(world.x, world.y);
+      }
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!dragRef.current) return;
-      const dx = (e.clientX - dragRef.current.startX) / camera.zoom;
-      const dy = (e.clientY - dragRef.current.startY) / camera.zoom;
-      setCamera((c) => ({
-        ...c,
-        x: dragRef.current!.camX - dx,
-        y: dragRef.current!.camY + dy,
-      }));
+      if (dragMode && onClick) {
+        const rect = canvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+        const world = screenToWorld(sx, sy, rect.width, rect.height);
+        onClick(world.x, world.y);
+      } else {
+        const dx = (e.clientX - dragRef.current.startX) / camera.zoom;
+        const dy = (e.clientY - dragRef.current.startY) / camera.zoom;
+        setCamera((c) => ({
+          ...c,
+          x: dragRef.current!.camX - dx,
+          y: dragRef.current!.camY + dy,
+        }));
+      }
     };
 
     const onMouseUp = () => {
@@ -228,7 +245,7 @@ export default function Canvas({
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
     };
-  }, [camera.x, camera.y, camera.zoom]);
+  }, [camera.x, camera.y, camera.zoom, dragMode, onClick, screenToWorld]);
 
   // Scroll-to-zoom (zoom toward cursor)
   useEffect(() => {
