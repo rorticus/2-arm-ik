@@ -1,73 +1,36 @@
-# React + TypeScript + Vite
+# 2-Arm IK
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 2-DOF robotic arm inverse kinematics simulator with real-time hardware control. Click or drag on a canvas to set a target position, and the app computes the joint angles needed to reach it — optionally sending them to a physical servo-driven arm over serial.
 
-Currently, two official plugins are available:
+## Web App
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Built with React, TypeScript, Vite, and Tailwind CSS.
 
-## React Compiler
+- Interactive canvas with pan and zoom
+- Click to set a target position, or toggle **Drag Mode: IK** to continuously update angles while dragging
+- Visualizes both arm segments, the reachability circle, and an inscribed working rectangle
+- Target positions beyond the arm's reach are automatically clamped
+- Configurable arm segment lengths (L1, L2) and direct angle inputs (θ0, θ1)
+- Connects to hardware over Web Serial API (9600 baud) to send joint angles in real time
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Getting Started
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```sh
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Firmware
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+PlatformIO project targeting the Arduino Uno R4 Minima. Receives servo angle commands over serial and drives two servos.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- 5-byte binary packet protocol: command byte, 3 data bytes, XOR checksum
+- Circular buffer for serial input
+- Servos on pins 3 and 5
+
+### Building
+
+```sh
+cd firmware/2-arm-ik
+pio run -t upload
 ```
