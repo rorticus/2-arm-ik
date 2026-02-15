@@ -1,4 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 
 type Camera = {
   x: number; // world coordinate at center of viewport
@@ -24,7 +30,12 @@ export default function Canvas({
   const [camera, setCamera] = useState<Camera>({ x: 0, y: 0, zoom: 1 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const dragRef = useRef<{ startX: number; startY: number; camX: number; camY: number } | null>(null);
+  const dragRef = useRef<{
+    startX: number;
+    startY: number;
+    camX: number;
+    camY: number;
+  } | null>(null);
 
   // World → screen coordinate conversion
   const worldToScreen = useCallback(
@@ -32,7 +43,7 @@ export default function Canvas({
       x: (wx - camera.x) * camera.zoom + width / 2,
       y: height / 2 - (wy - camera.y) * camera.zoom,
     }),
-    [camera]
+    [camera],
   );
 
   // Screen → world coordinate conversion
@@ -41,7 +52,7 @@ export default function Canvas({
       x: (sx - width / 2) / camera.zoom + camera.x,
       y: (height / 2 - sy) / camera.zoom + camera.y,
     }),
-    [camera]
+    [camera],
   );
 
   // Drawing
@@ -57,7 +68,8 @@ export default function Canvas({
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, width, height);
 
-    const toScreen = (wx: number, wy: number) => worldToScreen(wx, wy, width, height);
+    const toScreen = (wx: number, wy: number) =>
+      worldToScreen(wx, wy, width, height);
 
     // Grid
     const gridSpacing = 50;
@@ -104,6 +116,15 @@ export default function Canvas({
     ctx.arc(originScreen.x, originScreen.y, 5, 0, Math.PI * 2);
     ctx.fill();
 
+    // reachability circle
+    ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const reach = l1 + l2;
+    const rScreen = reach * camera.zoom;
+    ctx.arc(originScreen.x, originScreen.y, rScreen, 0, Math.PI * 2);
+    ctx.stroke();
+
     // Arms
     const theta0Rad = (theta0 * Math.PI) / 180;
     const theta1Rad = (theta1 * Math.PI) / 180;
@@ -131,7 +152,16 @@ export default function Canvas({
     ctx.moveTo(js.x, js.y);
     ctx.lineTo(es.x, es.y);
     ctx.stroke();
-  }, [camera, canvasSize, l1, l2, theta0, theta1, worldToScreen, screenToWorld]);
+  }, [
+    camera,
+    canvasSize,
+    l1,
+    l2,
+    theta0,
+    theta1,
+    worldToScreen,
+    screenToWorld,
+  ]);
 
   // Resize observer
   useLayoutEffect(() => {
@@ -152,14 +182,23 @@ export default function Canvas({
     if (!canvas) return;
 
     const onMouseDown = (e: MouseEvent) => {
-      dragRef.current = { startX: e.clientX, startY: e.clientY, camX: camera.x, camY: camera.y };
+      dragRef.current = {
+        startX: e.clientX,
+        startY: e.clientY,
+        camX: camera.x,
+        camY: camera.y,
+      };
     };
 
     const onMouseMove = (e: MouseEvent) => {
       if (!dragRef.current) return;
       const dx = (e.clientX - dragRef.current.startX) / camera.zoom;
       const dy = (e.clientY - dragRef.current.startY) / camera.zoom;
-      setCamera((c) => ({ ...c, x: dragRef.current!.camX - dx, y: dragRef.current!.camY + dy }));
+      setCamera((c) => ({
+        ...c,
+        x: dragRef.current!.camX - dx,
+        y: dragRef.current!.camY + dy,
+      }));
     };
 
     const onMouseUp = () => {
