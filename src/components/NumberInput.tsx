@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 type NumberInputProps = {
   label?: ReactNode;
@@ -12,6 +12,10 @@ export default function NumberInput({
   onChange,
 }: NumberInputProps) {
   const [valueInput, setValueInput] = useState(value.toString());
+
+  useEffect(() => {
+    setValueInput(value.toString());
+  }, [value]);
 
   return (
     <div className="flex flex-row items-center gap-1">
