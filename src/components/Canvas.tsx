@@ -117,13 +117,28 @@ export default function Canvas({
     ctx.fill();
 
     // reachability circle
+    const reach = l1 + l2;
     ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    const reach = l1 + l2;
     const rScreen = reach * camera.zoom;
     ctx.arc(originScreen.x, originScreen.y, rScreen, 0, Math.PI * 2);
     ctx.stroke();
+
+    // largest positive rectangle inscribed in reachability circle
+    const rectSide = reach / Math.SQRT2;
+    const rectOrigin = toScreen(0, 0);
+    const rectCorner = toScreen(rectSide, rectSide);
+    ctx.strokeStyle = "rgba(0, 128, 255, 0.5)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([6, 4]);
+    ctx.strokeRect(
+      rectOrigin.x,
+      rectCorner.y,
+      rectCorner.x - rectOrigin.x,
+      rectOrigin.y - rectCorner.y,
+    );
+    ctx.setLineDash([]);
 
     // Arms
     const theta0Rad = (theta0 * Math.PI) / 180;
