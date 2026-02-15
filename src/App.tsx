@@ -1,13 +1,16 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 import NumberInput from "./components/NumberInput";
 import Canvas from "./components/Canvas";
+import { useSerialProtocol } from "./hooks/useSerialProtocol";
 
 function App() {
   const [l1, setL1] = useState(100);
   const [l2, setL2] = useState(100);
   const [theta0, setTheta0] = useState(80);
   const [theta1, setTheta1] = useState(-45);
+
+  const { isConnected, connect, setServoAngles } = useSerialProtocol();
 
   const calculateThetas = useCallback(
     (x: number, y: number) => {
@@ -20,6 +23,10 @@ function App() {
     },
     [l1, l2],
   );
+
+  useEffect(() => {
+    setServoAngles?.(theta0, theta1);
+  }, [theta0, theta1, setServoAngles]); // Update servo angles on change
 
   return (
     <div className="h-screen flex flex-col">
@@ -62,6 +69,15 @@ function App() {
           value={theta1}
           onChange={setTheta1}
         />
+        <button
+          className="ml-auto px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-400"
+          disabled={isConnected}
+          onClick={() => {
+            connect();
+          }}
+        >
+          {isConnected ? "Connected" : "Connect Serial"}
+        </button>
       </div>
       <div className="flex-1 bg-amber-200">
         <Canvas
